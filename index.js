@@ -45,20 +45,6 @@ FanAccessory.prototype.updateRelays = function(value, callback) {
 
   this.log('update relays: ' + value);
 	
-  // request({
-  //   url: 'http://' + this.host + '/fanco/fan/api/v1.0/update',
-  //   method: 'POST',
-  //   json: true,
-  //   body: value,
-  // }, function(error, response, body) {
-  //   if (error) {
-  //     callback(error);
-  //   } else if (response.statusCode == 204) {
-  //     callback(null);
-  //   } else {
-  //     callback(new Error('HTTP response ' + response.statusCode + ': ' + JSON.stringify(body)));
-  //   }
-  // });
   request({
     url: 'http://' + this.host + '/rfremotefan/api/v1.0/update',
     method: 'POST',
@@ -73,56 +59,6 @@ FanAccessory.prototype.updateRelays = function(value, callback) {
       callback(new Error('HTTP response ' + response.statusCode + ': ' + JSON.stringify(body)));
     }
   });
-};
-
-FanAccessory.prototype.updateRelays2 = function(value, callback) {
-  this.log('update relays: ' + value);
-  cmd = "";
-  if (value == 3) {
-	  cmd = "pilight-send -p raw -c \"210 630 630 210 210 630 210 630 210 630 210 630 210 630 630 210 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 210 630 630 210 630 210 210 7140\"";
-  }
-  else if (value == 2){
-	  cmd = "pilight-send -p raw -c \"209 627 627 209 209 627 209 627 209 627 209 627 209 627 627 209 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 627 209 627 209 209 627 209 627 209 7106\"";
-  }
-  else if (value == 1) {
-	  cmd = "pilight-send -p raw -c \"209 627 627 209 209 627 209 627 209 627 209 627 209 627 627 209 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 627 209 627 209 209 627 209 627 209 627 209 627 209 7106\"";
-  }
-  else {
-	  cmd = "pilight-send -p raw -c \"209 627 627 209 209 627 209 627 209 627 209 627 209 627 627 209 209 627 209 627 209 627 209 627 209 627 209 627 209 627 209 627 627 209 627 209 209 627 209 627 209 627 209 627 209 627 209 627 209 7106\"";
-  }
-  this.log('cmd: ' + cmd);
-  
-// Execute command to set state
-  exec(cmd, function (error, stdout, stderr) {
-    // Error detection
-    if (error) {
-      // this.log("Failed to change relay " + value);
-//       this.log(stderr);
-    } else {
-      // if (cmd) this.log("Relay value changed: " + value);
-      error = null;
-    }
-    //
-    // // Restore switch after 1s if only one command exists
-    // if (!notCmd && !thisSwitch.state_cmd) {
-    //   setTimeout(function () {
-    //     self.accessories[thisSwitch.name].getService(Service.Switch)
-    //       .setCharacteristic(Characteristic.On, !state);
-    //   }, 1000);
-    // }
-
-    if (tout) {
-      clearTimeout(tout);
-      callback(error);
-    }
-  });
-  
-// Allow 1s to set state but otherwise assumes success
-  tout = setTimeout(function () {
-    tout = null;
-    // this.log("took too long, assuming success." );
-    callback();
-  }, 1000);
 };
 
 FanAccessory.prototype.getFanState = function(callback) {
@@ -188,14 +124,6 @@ FanAccessory.prototype.setFanState = function(state, callback) {
       return;
     }
 
-	//this.log("host:"+ this.host +", name: " + this.name)
-
-    // this.updateRelays2(relay, (error) => {
-// 		this.log("response: "+ error)
-//         this.mutex.unlock();
-//         callback(error);
-//         return;
-//     });
     this.updateRelays(update1, (error) => {
       if (error) {
         this.mutex.unlock();
@@ -239,18 +167,8 @@ FanAccessory.prototype.getServices = function() {
     .on('get', this.getSpeed.bind(this))
     .on('set', this.setSpeed.bind(this));
 
-  // this.temperatureService = new Service.TemperatureSensor();
- //  this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature)
- //    .on('get', this.getTemperature.bind(this));
-  // return [this.fanService, this.temperatureService];
   return [this.fanService];
 };
-
-// FanAccessory.prototype.getTemperature = function(callback) {
-//   this.getFanState(function(error, state) {
-//     callback(null, state && state.temperature);
-//   });
-// };
 
 FanAccessory.prototype.getOn = function(callback) {
   this.getFanState(function(error, state) {
